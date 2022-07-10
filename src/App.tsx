@@ -4,7 +4,6 @@ import Sketch from "./Sketch"
 
 const App = () => (
   <Canvas shadows>
-    <OrbitControls />
     <Sketch />
   </Canvas>
 )
