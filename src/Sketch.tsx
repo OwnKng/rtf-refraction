@@ -5,9 +5,7 @@ import { InstancedFlow } from "three/examples/jsm/modifiers/CurveModifier"
 
 const TWO_PI = Math.PI * 2
 
-const numberOfPoints = 20
-
-const radius = 30
+const numberOfPoints = 8
 
 const circle = Array.from({ length: numberOfPoints }, (_, i) =>
   new THREE.Vector3()
@@ -16,7 +14,7 @@ const circle = Array.from({ length: numberOfPoints }, (_, i) =>
       Math.PI / 2 + (Math.random() - 0.5),
       (i / numberOfPoints) * TWO_PI
     )
-    .multiplyScalar(radius)
+    .multiplyScalar(50)
 )
 
 const curve = new THREE.CatmullRomCurve3(circle, true, "centripetal")
@@ -37,7 +35,7 @@ const Sketch = () => {
   const flow = useMemo(() => {
     box.rotateZ(-Math.PI * 0.5)
 
-    const numberOfInstances = 10
+    const numberOfInstances = 100
     const flow = new InstancedFlow(numberOfInstances, 1, box, boxMaterial)
     flow.updateCurve(0, curve)
 
