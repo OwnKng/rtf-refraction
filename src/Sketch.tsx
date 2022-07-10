@@ -1,59 +1,93 @@
-import { useFrame } from "@react-three/fiber"
+// @ts-nocheck
 import { useMemo, useRef } from "react"
+import { Text } from "troika-three-text"
 import * as THREE from "three"
-import { InstancedFlow } from "three/examples/jsm/modifiers/CurveModifier"
+import { useFrame, useThree } from "@react-three/fiber"
 
-const TWO_PI = Math.PI * 2
+const vertexShader = `
+  varying vec2 vUv; 
+  void main() {
+    vec3 transformedPosition = position; 
 
-const numberOfPoints = 8
 
-const circle = Array.from({ length: numberOfPoints }, (_, i) =>
-  new THREE.Vector3()
-    .setFromSphericalCoords(
-      1,
-      Math.PI / 2 + (Math.random() - 0.5),
-      (i / numberOfPoints) * TWO_PI
-    )
-    .multiplyScalar(50)
-)
+    gl_Position = projectionMatrix * modelViewMatrix * vec4(transformedPosition, 1.0); 
+    vUv = uv; 
+  }
+`
 
-const curve = new THREE.CatmullRomCurve3(circle, true, "centripetal")
+const fragmentShader = `
+  uniform sampler2D uTexture; 
+  uniform float uTime; 
 
-const box = new THREE.ConeBufferGeometry(1, 3, 5)
-const boxMaterial = new THREE.MeshPhongMaterial({ color: "orange" })
+  varying vec2 vUv; 
+
+  void main() {
+    float time = uTime * 0.1;
+    vec2 repeat = vec2(5., 6.);
+    vec2 uv = fract(vUv * repeat + vec2(time, 0.));
+  
+    vec3 texture = texture2D(uTexture, uv).rgb;
+
+    if(texture.r < 0.1) discard; 
+  
+    gl_FragColor = vec4(texture, 1.0);
+  }
+`
 
 const Sketch = () => {
-  const ref = useRef(null!)
+  const ref = useRef<THREE.Mesh>(null!)
 
-  const points = curve.getPoints(50)
+  const [rt, rtCamera, rtScene] = useMemo(() => {
+    const rt = new THREE.WebGLRenderTarget(
+      window.innerWidth,
+      window.innerHeight
+    )
 
-  const line = new THREE.LineLoop(
-    new THREE.BufferGeometry().setFromPoints(points),
-    new THREE.LineBasicMaterial()
-  )
+    const rtCamera = new THREE.PerspectiveCamera(45, 1, 0.1, 1000)
+    rtCamera.position.z = 40
 
-  const flow = useMemo(() => {
-    box.rotateZ(-Math.PI * 0.5)
+    const rtScene = new THREE.Scene()
+    rtScene.background = new THREE.Color("#000000")
 
-    const numberOfInstances = 100
-    const flow = new InstancedFlow(numberOfInstances, 1, box, boxMaterial)
-    flow.updateCurve(0, curve)
+    const text = new Text()
+    text.text = "Hello World!"
 
-    for (let i = 0; i < numberOfInstances; i++) {
-      flow.setCurve(i, 0)
-      flow.moveIndividualAlongCurve(i, (i * 1) / numberOfInstances)
-    }
+    text.fontSize = 2.4
+    text.anchorX = "center"
+    text.anchorY = "middle"
 
-    return flow
+    rtScene.add(text)
+
+    return [rt, rtCamera, rtScene, text]
   }, [])
 
-  useFrame(() => flow.moveAlongCurve(0.001))
+  const uniforms = useMemo(
+    () => ({
+      uTime: { value: 0 },
+      uTexture: { value: rt.texture },
+    }),
+    [rt]
+  )
+
+  useFrame(({ gl, scene, camera, clock }) => {
+    gl.setRenderTarget(rt)
+    gl.render(rtScene, rtCamera)
+    gl.setRenderTarget(null)
+
+    ref.current.material.uniforms.uTime.value = clock.getElapsedTime()
+  })
 
   return (
-    <>
-      <primitive object={line} />
-      <primitive castShadow receiveShadow ref={ref} object={flow.object3D} />
-    </>
+    <mesh ref={ref} rotation={[0, 0, Math.PI * 0.2]}>
+      <icosahedronBufferGeometry args={[30, 8]} />
+      <shaderMaterial
+        uniforms={uniforms}
+        fragmentShader={fragmentShader}
+        vertexShader={vertexShader}
+        transparent={true}
+        side={THREE.DoubleSide}
+      />
+    </mesh>
   )
 }
 
