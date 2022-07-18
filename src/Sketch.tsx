@@ -11,23 +11,21 @@ const Sketch = () => {
   const { viewport } = useThree()
 
   const [rt, rtCamera, rtScene] = useMemo(() => {
-    const rt = new THREE.WebGLRenderTarget(
-      window.innerWidth,
-      window.innerHeight
-    )
+    const rt = new THREE.WebGLRenderTarget(4048, 4048)
 
     const rtCamera = new THREE.PerspectiveCamera(45, 1, 0.1, 1000)
-    rtCamera.position.z = 20
+    rtCamera.position.z = 40
 
     const rtScene = new THREE.Scene()
     rtScene.background = new THREE.Color("#000000")
 
     const text = new Text()
-    text.text = "next generation digital insights"
+    text.text = "NEXT GENERATION DIGITAL INSIGHTS"
 
-    text.fontSize = 1.2
+    text.fontSize = 1.8
     text.anchorX = "center"
     text.anchorY = "middle"
+    text.color = "#fffffe"
 
     rtScene.add(text)
 
@@ -43,26 +41,19 @@ const Sketch = () => {
     [rt]
   )
 
-  useFrame(({ gl, clock, mouse }) => {
+  useFrame(({ gl }) => {
     gl.setRenderTarget(rt)
     gl.render(rtScene, rtCamera)
     gl.setRenderTarget(null)
-
-    ref.current.material.uniforms.uTime.value = clock.getElapsedTime()
-    ref.current.material.uniforms.uMouse.value = new THREE.Vector2(
-      mouse.x,
-      mouse.y
-    )
   })
 
   return (
     <mesh ref={ref}>
-      <planeBufferGeometry args={[viewport.width * 1.5, viewport.height * 2]} />
+      <planeBufferGeometry args={[viewport.width, viewport.height]} />
       <shaderMaterial
-        uniforms={uniforms}
-        fragmentShader={fragmentShader}
         vertexShader={vertexShader}
-        side={THREE.DoubleSide}
+        fragmentShader={fragmentShader}
+        uniforms={uniforms}
       />
     </mesh>
   )
