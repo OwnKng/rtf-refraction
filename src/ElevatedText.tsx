@@ -11,30 +11,29 @@ const Sketch = () => {
   const { viewport } = useThree()
 
   const [rt, rtCamera, rtScene] = useMemo(() => {
-    const rt = new THREE.WebGLRenderTarget(4048, 4048)
+    const rt = new THREE.WebGLRenderTarget(2024, 2024)
 
     const rtCamera = new THREE.PerspectiveCamera(45, 1, 0.1, 1000)
-    rtCamera.position.z = 20
 
     const rtScene = new THREE.Scene()
     rtScene.background = new THREE.Color("#000000")
 
     const text = new Text()
-    text.text = "hello world from owen"
+    text.text =
+      "hello world from Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do eiusmod tempor incididunt ut labore et dolore magna aliqua. Ut enim ad minim veniam, quis nostrud exercitation ullamco laboris nisi ut aliquip ex ea commodo consequat. Duis aute irure dolor in reprehenderit in voluptate velit esse cillum dolore eu fugiat nulla pariatur."
 
-    text.fontSize = 1.4
+    text.fontSize = 1
     text.anchorX = "center"
     text.anchorY = "middle"
     text.color = "#fffffe"
     text.maxWidth = viewport.width
     text.lineHeight = 1.4
     text.textAlign = "justify"
-    text.colorRanges = { 0: "red", 8: "blue" }
 
     rtScene.add(text)
 
     return [rt, rtCamera, rtScene, text]
-  }, [viewport.width])
+  }, [viewport])
 
   const uniforms = useMemo(
     () => ({

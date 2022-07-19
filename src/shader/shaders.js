@@ -24,11 +24,6 @@ export const fragmentShader = glsl`
   void main() {
     vec3 texture = texture2D(uTexture, vUv).rgb;
 
-    if(texture.r == 0.0 && texture.b == 0.0) discard;
-
-    float strength = texture.r * 1.0; 
-    strength = max(strength, 0.2); 
-
-    gl_FragColor = vec4(vec3(strength), 1.0);
+    gl_FragColor = vec4(texture, 1.0);
   }
 `

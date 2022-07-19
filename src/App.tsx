@@ -1,7 +1,6 @@
 import { Canvas } from "@react-three/fiber"
 import Sketch from "./Sketch"
-import { OrbitControls } from "@react-three/drei"
-import ElevatedText from "./ElevatedText"
+import * as THREE from 'three'
 
 const App = () => (
   <Canvas
@@ -12,8 +11,13 @@ const App = () => (
       camera.lookAt(0, 0, 0)
     }}
   >
-    <OrbitControls />
-    <ElevatedText />
+    <Sketch
+      color='blue'
+      multisample
+      samples={8}
+      stencilBuffer={false}
+      format={THREE.RGBFormat}
+    />
   </Canvas>
 )
 

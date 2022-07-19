@@ -1,32 +1,46 @@
-// @ts-nocheck
 import { useMemo, useRef } from "react"
 import * as THREE from "three"
 import { useFrame, useThree } from "@react-three/fiber"
-import { fragmentShader, vertexShader } from "./shader/shaders"
-import { Text } from "@react-three/drei"
+import { Text, useFBO } from "@react-three/drei"
+import { createPortal } from "@react-three/fiber"
+import { PerspectiveCamera } from "three"
 
 const myText = "hello world from owen"
 
-const Sketch = () => {
-  const { viewport } = useThree()
+const Texture = () => (
+  <mesh>
+    <boxBufferGeometry />
+    <meshBasicMaterial color='teal' />
+  </mesh>
+)
+
+const Sketch = (props: any) => {
+  const target = useFBO({ ...props })
+
+  const cam = useRef<PerspectiveCamera>(null!)
+
+  const scene = useMemo(() => {
+    const scene = new THREE.Scene()
+    scene.background = new THREE.Color(props.color)
+
+    return scene
+  }, [props.color])
+
+  useFrame(({ gl }) => {
+    gl.setRenderTarget(target)
+    gl.render(scene, cam.current)
+    gl.setRenderTarget(null)
+  })
 
   return (
-    <group>
-      <Text
-        rotation={[-Math.PI * 0.5, 0, 0]}
-        fontSize={1}
-        maxWidth={viewport.width}
-        height={viewport.height}
-        lineHeight={1.4}
-        textAlign='justify'
-        anchorX='center'
-        anchorY='middle'
-        colorRanges={{ 0: "red", 8: "blue" }}
-      >
-        {myText}
-        <meshBasicMaterial color='teal' side={THREE.DoubleSide} />
-      </Text>
-    </group>
+    <>
+      <perspectiveCamera ref={cam} position={[0, 0, 10]} />
+      {createPortal(<Texture />, scene)}
+      <mesh rotation={[-Math.PI * 0.5, 0, 0]}>
+        <planeBufferGeometry args={[10, 10]} />
+        <meshBasicMaterial map={target.texture} />
+      </mesh>
+    </>
   )
 }
 
