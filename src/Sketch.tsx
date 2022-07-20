@@ -1,46 +1,62 @@
+// @ts-nocheck
 import { useMemo, useRef } from "react"
 import * as THREE from "three"
 import { useFrame, useThree } from "@react-three/fiber"
-import { Text, useFBO } from "@react-three/drei"
-import { createPortal } from "@react-three/fiber"
-import { PerspectiveCamera } from "three"
-
-const myText = "hello world from owen"
-
-const Texture = () => (
-  <mesh>
-    <boxBufferGeometry />
-    <meshBasicMaterial color='teal' />
-  </mesh>
-)
+import { vertexShader, fragmentShader } from "./shader/shaders"
 
 const Sketch = (props: any) => {
-  const target = useFBO({ ...props })
+  const { viewport } = useThree()
+  const { width, height } = viewport
 
-  const cam = useRef<PerspectiveCamera>(null!)
+  const ref = useRef()
 
-  const scene = useMemo(() => {
-    const scene = new THREE.Scene()
-    scene.background = new THREE.Color(props.color)
+  const texture = useMemo(() => {
+    const canvas = document.createElement("canvas")
+    const ctx = canvas.getContext("2d")
 
-    return scene
-  }, [props.color])
+    canvas.width = 300
+    canvas.height = 300
 
-  useFrame(({ gl }) => {
-    gl.setRenderTarget(target)
-    gl.render(scene, cam.current)
-    gl.setRenderTarget(null)
-  })
+    const fontSize = canvas.height
+    const fontStyle = `Bold ${fontSize}px Arial`
+    const text = "text"
+
+    ctx.fillStyle = "white"
+    ctx.fillRect(0, 0, canvas.width, canvas.height)
+
+    ctx.font = fontStyle
+    ctx.fillStyle = "black"
+
+    ctx.fillText(text, 0, fontSize, 300)
+
+    //@ts-ignore
+    const texture = new THREE.CanvasTexture(ctx.canvas)
+    texture.needsUpdate = true
+    return texture
+  }, [])
+
+  const uniforms = useMemo(
+    () => ({
+      uTexture: { value: texture },
+      uTime: { value: 0 },
+    }),
+    [texture]
+  )
+
+  useFrame(
+    ({ clock }) =>
+      (ref.current.material.uniforms.uTime.value = clock.getElapsedTime())
+  )
 
   return (
-    <>
-      <perspectiveCamera ref={cam} position={[0, 0, 10]} />
-      {createPortal(<Texture />, scene)}
-      <mesh rotation={[-Math.PI * 0.5, 0, 0]}>
-        <planeBufferGeometry args={[10, 10]} />
-        <meshBasicMaterial map={target.texture} />
-      </mesh>
-    </>
+    <mesh ref={ref} rotation={[-Math.PI * 0.5, 0, 0]}>
+      <planeBufferGeometry args={[viewport.width, viewport.height, 100, 100]} />
+      <shaderMaterial
+        uniforms={uniforms}
+        vertexShader={vertexShader}
+        fragmentShader={fragmentShader}
+      />
+    </mesh>
   )
 }
 
