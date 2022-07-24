@@ -1,7 +1,5 @@
 import { Canvas } from "@react-three/fiber"
-import Sketch from "./Sketch"
-import * as THREE from "three"
-import { OrbitControls } from "@react-three/drei"
+import CurveText from "./CurveText"
 
 const App = () => (
   <Canvas
@@ -12,14 +10,7 @@ const App = () => (
       camera.lookAt(0, 0, 0)
     }}
   >
-    <OrbitControls />
-    <Sketch
-      color='blue'
-      multisample
-      samples={8}
-      stencilBuffer={false}
-      format={THREE.RGBFormat}
-    />
+    <CurveText text='NEXT GENERATION DIGITAL INSIGHTS   -   NEXT GENERATION DIGITAL INSIGHTS   -  ' />
   </Canvas>
 )
 
