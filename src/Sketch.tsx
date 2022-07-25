@@ -1,22 +1,7 @@
-import { useThree, useFrame } from "@react-three/fiber"
+import { useFrame } from "@react-three/fiber"
 import { useMemo, useRef } from "react"
 import * as THREE from "three"
-
-const vertex = `
-    varying vec2 vUv; 
-    void main() {
-        vUv = uv; 
-        gl_Position = projectionMatrix * modelViewMatrix * vec4(position, 1.0); 
-    }
-`
-
-const fragment = `
-    varying vec2 vUv; 
-
-    void main() {
-        gl_FragColor = vec4(vec3(vUv, 1.0), 1.0); 
-    }
-`
+import Text from "./Text"
 
 const vertexShader = `
 varying vec3 vReflect; 
@@ -24,10 +9,10 @@ varying vec3 vRefract[3];
 varying float vReflectionFactor; 
 
     void main() {
-        float mRefractionRatio = 1.2; 
-        float mFresnelBias = 0.2; 
+        float mRefractionRatio = 1.02; 
+        float mFresnelBias = 0.4; 
         float mFresnelScale = 2.0; 
-        float mFresnelPower = 1.2; 
+        float mFresnelPower = 2.0; 
 
         vec4 modelViewPosition = modelViewMatrix * vec4(position, 1.0); 
         vec4 worldPosition = modelMatrix * vec4(position, 1.0); 
@@ -67,8 +52,6 @@ const fragmentShader = `
 `
 
 const Sketch = () => {
-  const { viewport } = useThree()
-
   const ref = useRef<THREE.Mesh>(null!)
 
   const cubeRenderTarget = useMemo(
@@ -87,30 +70,6 @@ const Sketch = () => {
     [cubeRenderTarget]
   )
 
-  const texture = useMemo(() => {
-    const canvas = document.createElement("canvas")
-    const ctx = canvas.getContext("2d")
-
-    const width = 1024
-
-    canvas.width = width
-    canvas.height = width / 2
-
-    const fontSize = canvas.height
-
-    // @ts-ignore
-    ctx.font = `Bold ${fontSize}px Arial`
-    // @ts-ignore
-    ctx.fillStyle = "white"
-    // @ts-ignore
-    ctx.fillText("Hello world", 0, canvas.height, width)
-
-    const texture = new THREE.CanvasTexture(canvas)
-    texture.needsUpdate = true
-
-    return texture
-  }, [])
-
   const uniforms = useMemo(
     () => ({
       uTexture: { value: {} },
@@ -118,26 +77,18 @@ const Sketch = () => {
     []
   )
 
-  useFrame(({ gl, scene, mouse }) => {
+  useFrame(({ gl, scene }) => {
     cubeCamera.update(gl, scene)
 
     //@ts-ignore
     ref.current.material.uniforms.uTexture.value = cubeRenderTarget.texture
-
-    ref.current.position.lerp(
-      new THREE.Vector3(mouse.x * viewport.width, mouse.y * viewport.height, 0),
-      0.05
-    )
   })
 
   return (
     <>
-      <mesh position={[0, 0, -2]}>
-        <planeBufferGeometry args={[viewport.width, viewport.height]} />
-        <meshBasicMaterial map={texture} side={THREE.DoubleSide} />
-      </mesh>
+      <Text />
       <mesh ref={ref}>
-        <sphereBufferGeometry args={[2, 64, 64]} />
+        <sphereBufferGeometry args={[2, 32, 32]} />
         <shaderMaterial
           uniforms={uniforms}
           vertexShader={vertexShader}
