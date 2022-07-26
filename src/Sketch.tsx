@@ -87,7 +87,7 @@ const Sketch = () => {
   return (
     <>
       <Text />
-      <mesh ref={ref}>
+      <mesh ref={ref} position={[4, 1, 4]}>
         <sphereBufferGeometry args={[2, 32, 32]} />
         <shaderMaterial
           uniforms={uniforms}

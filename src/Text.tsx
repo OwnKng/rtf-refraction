@@ -17,37 +17,39 @@ const fragmentShader = `
     varying vec2 vUv; 
 
     void main() {
-        float time = uTime * 0.1; 
+      float time = uTime * 0.5;
+      vec2 repeat = vec2(3.0, 5.0);
+      vec2 _uv = fract(vUv * repeat + vec2(-time, 0.5)); 
+      float color = texture2D(uTexture, _uv).r; 
 
-        vec2 repeat = vec2(2.0, 1.0); 
-
-        vec2 _uv = fract(vUv * repeat + vec2(0.5, time)); 
-        _uv = vec2(_uv.y, 1.0 - _uv.x); 
-
-        vec4 color = texture2D(uTexture, _uv); 
-
-        color = smoothstep(0.55, 0.6, color); 
-        
-        gl_FragColor = color; 
+      color = smoothstep(0.3, 1.0, color); 
+      
+      gl_FragColor = vec4(vec3(color), 1.0); 
     }
 `
 
 const Text = () => {
   const { viewport } = useThree()
-  const ref = useRef<THREE.Mesh>(null!)
+  const ref = useRef<THREE.Group>(null!)
 
   const texture = useMemo(() => {
     const canvas = document.createElement("canvas")
 
-    const width = 400
-    const text = "King"
+    const width = 512
+    const text = "CORNER"
 
     canvas.width = width
     canvas.height = width / 2
 
-    const fontSize = canvas.height * 0.75
+    const fontSize = canvas.height
 
     const ctx = canvas.getContext("2d")
+
+    // @ts-ignore
+    ctx.fillStyle = "black" // border color
+    // @ts-ignore
+    ctx.fillRect(0, 0, canvas.width, canvas.height)
+
     // @ts-ignore
     ctx.font = `Bold ${fontSize}px Arial`
 
@@ -76,16 +78,23 @@ const Text = () => {
     [texture]
   )
 
-  useFrame(
-    ({ clock }) =>
-      // @ts-ignore
-      (ref.current.material.uniforms.uTime.value = clock.getElapsedTime())
-  )
+  // useFrame(({ clock }) => {
+  //   textMaterial.uniforms.uTime.value = clock.getElapsedTime()
+  // })
 
   return (
-    <mesh ref={ref} position={[0, 0, -3]} material={textMaterial}>
-      <planeBufferGeometry args={[5, viewport.height]} />
-    </mesh>
+    <group ref={ref} position={[viewport.width * 0.5, 0.5, 0]}>
+      <mesh
+        position={[-viewport.width * 0.5, 0, viewport.width * 0.5]}
+        rotation={[0, Math.PI * 0.5, 0]}
+        material={textMaterial}
+      >
+        <planeBufferGeometry args={[viewport.width, viewport.height]} />
+      </mesh>
+      <mesh position={[0, 0, 0]} rotation={[0, 0, 0]} material={textMaterial}>
+        <planeBufferGeometry args={[viewport.width, viewport.height]} />
+      </mesh>
+    </group>
   )
 }
 
