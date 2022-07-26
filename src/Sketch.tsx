@@ -1,4 +1,4 @@
-import { useFrame } from "@react-three/fiber"
+import { useFrame, useThree } from "@react-three/fiber"
 import { useMemo, useRef } from "react"
 import * as THREE from "three"
 import Text from "./Text"
@@ -54,6 +54,8 @@ const fragmentShader = `
 const Sketch = () => {
   const ref = useRef<THREE.Mesh>(null!)
 
+  const { viewport } = useThree()
+
   const cubeRenderTarget = useMemo(
     () =>
       new THREE.WebGLCubeRenderTarget(256, {
@@ -87,8 +89,8 @@ const Sketch = () => {
   return (
     <>
       <Text />
-      <mesh ref={ref} position={[4, 1, 4]}>
-        <sphereBufferGeometry args={[2, 32, 32]} />
+      <mesh ref={ref} position={[4, 2, 4]}>
+        <sphereBufferGeometry args={[3, 32, 32]} />
         <shaderMaterial
           uniforms={uniforms}
           vertexShader={vertexShader}

@@ -17,12 +17,13 @@ const fragmentShader = `
     varying vec2 vUv; 
 
     void main() {
-      float time = uTime * 0.5;
+      float time = uTime * 0.25;
       vec2 repeat = vec2(3.0, 5.0);
       vec2 _uv = fract(vUv * repeat + vec2(-time, 0.5)); 
       float color = texture2D(uTexture, _uv).r; 
 
       color = smoothstep(0.3, 1.0, color); 
+      color *= 0.75; 
       
       gl_FragColor = vec4(vec3(color), 1.0); 
     }
@@ -41,7 +42,7 @@ const Text = () => {
     canvas.width = width
     canvas.height = width / 2
 
-    const fontSize = canvas.height
+    const fontSize = canvas.height * 0.95
 
     const ctx = canvas.getContext("2d")
 
@@ -70,6 +71,7 @@ const Text = () => {
       new THREE.ShaderMaterial({
         vertexShader,
         fragmentShader,
+
         uniforms: {
           uTexture: { value: texture },
           uTime: { value: 0 },
@@ -78,12 +80,12 @@ const Text = () => {
     [texture]
   )
 
-  // useFrame(({ clock }) => {
-  //   textMaterial.uniforms.uTime.value = clock.getElapsedTime()
-  // })
+  useFrame(({ clock }) => {
+    textMaterial.uniforms.uTime.value = clock.getElapsedTime()
+  })
 
   return (
-    <group ref={ref} position={[viewport.width * 0.5, 0.5, 0]}>
+    <group ref={ref} position={[viewport.width * 0.5 - 1, 0, -1]}>
       <mesh
         position={[-viewport.width * 0.5, 0, viewport.width * 0.5]}
         rotation={[0, Math.PI * 0.5, 0]}

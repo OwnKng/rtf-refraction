@@ -5,7 +5,7 @@ import Sketch from "./Sketch"
 const App = () => (
   <Canvas
     orthographic
-    camera={{ zoom: 100 }}
+    camera={{ zoom: 80 }}
     onCreated={({ camera }) => {
       camera.position.setFromSphericalCoords(20, Math.PI / 3, Math.PI / 4)
       camera.lookAt(0, 0, 0)
